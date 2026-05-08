@@ -34,7 +34,7 @@ def calculate_buy_sell_atr(
     src_ema_period: int = 3
 ) -> pd.DataFrame:
     """
-    Buy/Sell ATR Type A.
+    Buy/Sell ATR.
 
     Logic chính:
     BUY  khi giá cắt lên hoặc nằm trên upper_band.
