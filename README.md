@@ -8,7 +8,7 @@ The project currently focuses on one stock symbol at a time, for example: `FPT`.
 
 - Collect Vietnamese stock OHLCV data using `vnstock`
 - Save raw stock data to CSV
-- Calculate Buy/Sell ATR Type A signals
+- Calculate Buy/Sell ATR signals
 - Generate trading signals:
   - `BUY`
   - `SELL`
@@ -181,7 +181,7 @@ If you run the project with `--collect`, the CSV file will be created automatica
 
 ## Strategy Logic
 
-This project uses the Buy/Sell ATR Type A indicator.
+This project uses the Buy/Sell ATR indicator.
 
 Default parameters:
 
