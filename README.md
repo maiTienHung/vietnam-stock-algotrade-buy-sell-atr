@@ -45,7 +45,7 @@ buy-sell-atr/
 | File              | Description                                 |
 | ----------------- | ------------------------------------------- |
 | `collect_data.py` | Collects Vietnamese stock market data       |
-| `buy_sell_atr.py` | Calculates Buy/Sell ATR Type A signals      |
+| `buy_sell_atr.py` | Calculates Buy/Sell ATR signals             |
 | `portfolio.py`    | Manages cash, shares, and portfolio value   |
 | `backtest.py`     | Runs the backtest based on BUY/SELL signals |
 | `main.py`         | Main entry point of the project             |
