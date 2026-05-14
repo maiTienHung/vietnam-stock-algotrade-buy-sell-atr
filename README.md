@@ -1,19 +1,18 @@
-# Vietnam Stock Algotrade - Buy Sell ATR
+# Vietnam Stock & Derivatives Algotrade - Buy Sell ATR
 
-A Python-based learning project for collecting Vietnamese stock market data, calculating Buy/Sell ATR signals, running backtests, and exporting trading reports.
+A Python-based learning project for collecting Vietnamese market data, calculating Buy/Sell ATR signals, running backtests, and exporting trading reports.
 
-This project was built to practice algorithmic trading concepts, financial data processing, technical indicator implementation, portfolio simulation, and systematic backtesting.
+This project supports two backtesting modes:
 
-The system supports both:
+1. **Vietnamese stock backtesting**
+   - Long-only strategy
+   - Example symbols: `FPT`, `HPG`, `VNM`, `VCB`, `MWG`, `SSI`
 
-- Single-stock backtesting
-- Batch backtesting across multiple Vietnamese stocks
+2. **Vietnamese derivatives backtesting**
+   - Long/Short strategy
+   - Example symbol: `VN30F1M`
 
-Example stock symbols:
-
-```text
-FPT, HPG, VNM, VCB, MWG, SSI, CTG, BID, TCB, MBB
-```
+The project was built to practice algorithmic trading concepts, financial data processing, technical indicator implementation, portfolio simulation, long/short trading logic, and systematic backtesting.
 
 ---
 
@@ -28,9 +27,10 @@ The main goal is to gain hands-on experience with:
 - OHLCV data preprocessing
 - Technical indicator implementation
 - Buy/Sell signal generation
-- Backtesting
+- Stock backtesting
+- Derivatives long/short backtesting
 - Portfolio simulation
-- Batch strategy evaluation across multiple stocks
+- Strategy evaluation across multiple symbols
 
 I built this project to demonstrate my ability to develop a simple algorithmic trading research system as part of my preparation for internship opportunities in software engineering, data analysis, fintech, quantitative research, or algorithmic trading.
 
@@ -38,23 +38,72 @@ I built this project to demonstrate my ability to develop a simple algorithmic t
 
 ## Features
 
-- Collect Vietnamese stock OHLCV data using `vnstock`
-- Save raw stock data to CSV
-- Preprocess stock price data
+- Collect Vietnamese market OHLCV data using `vnstock`
+- Save raw data to CSV
+- Preprocess stock and derivatives price data
 - Calculate Buy/Sell ATR signals
 - Generate trading signals:
   - `BUY`
   - `SELL`
   - `HOLD`
-- Run a simple backtest for one stock
-- Run batch backtests for multiple Vietnamese stocks
-- Simulate portfolio management
+- Run a single-stock backtest
+- Run batch backtests across multiple Vietnamese stocks
+- Run derivatives long/short backtest
+- Simulate stock portfolio management
+- Simulate derivatives position management
 - Support stop loss and take profit
 - Export:
   - trade history
   - equity curve
-  - individual stock summary
-  - all-stocks summary report
+  - individual symbol summary
+  - batch summary report
+  - derivatives summary report
+
+---
+
+## Supported Markets
+
+### 1. Vietnamese Stock Market
+
+This mode is designed for Vietnamese listed equities.
+
+Example symbols:
+
+```text
+FPT, HPG, VNM, VCB, MWG, SSI, CTG, BID, TCB, MBB
+```
+
+Stock mode uses a **long-only strategy**:
+
+```text
+BUY  -> buy shares if there is no open position
+SELL -> sell shares if a position is currently held
+HOLD -> do nothing
+```
+
+### 2. Vietnamese Derivatives Market
+
+This mode is designed for Vietnamese index futures, especially `VN30F1M`.
+
+Derivatives mode uses **long/short logic**:
+
+```text
+BUY  -> open LONG or close SHORT and open LONG
+SELL -> open SHORT or close LONG and open SHORT
+HOLD -> keep the current position
+```
+
+Example symbol:
+
+```text
+VN30F1M
+```
+
+For derivatives data collection, using source `VCI` is recommended:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --collect
+```
 
 ---
 
@@ -66,18 +115,28 @@ buy-sell-atr/
 ├── src/
 │   ├── collect_data.py
 │   ├── buy_sell_atr.py
-│   ├── backtest.py
 │   ├── portfolio.py
+│   ├── backtest_engine.py
+│   ├── backtest.py
 │   ├── main.py
-│   └── batch_backtest.py
+│   │
+│   ├── derivatives_portfolio.py
+│   ├── derivatives_backtest_engine.py
+│   └── derivatives_backtest.py
 │
 ├── data/
 │   ├── raw/
 │   ├── processed/
-│   └── backtest/
+│   ├── backtest/
+│   │
+│   └── derivatives/
+│       ├── raw/
+│       ├── processed/
+│       └── backtest/
 │
 ├── reports/
-│   └── all_stocks_summary.csv
+│   ├── all_stocks_summary.csv
+│   └── derivatives_summary.csv
 │
 ├── requirements.txt
 ├── README.md
@@ -88,14 +147,17 @@ buy-sell-atr/
 
 ## Main Files
 
-| File                | Description                                       |
-| ------------------- | ------------------------------------------------- |
-| `collect_data.py`   | Collects Vietnamese stock market data             |
-| `buy_sell_atr.py`   | Calculates Buy/Sell ATR signals                   |
-| `portfolio.py`      | Manages cash, shares, trades, and portfolio value |
-| `backtest.py`       | Runs the backtest based on BUY/SELL/HOLD signals  |
-| `main.py`           | Runs the full pipeline for one stock              |
-| `batch_backtest.py` | Runs backtests for multiple Vietnamese stocks     |
+| File                             | Description                                              |
+| -------------------------------- | -------------------------------------------------------- |
+| `collect_data.py`                | Collects Vietnamese market data                          |
+| `buy_sell_atr.py`                | Calculates Buy/Sell ATR signals                          |
+| `portfolio.py`                   | Manages cash, shares, trades, and stock portfolio value  |
+| `backtest_engine.py`             | Core backtest engine for long-only stock strategy        |
+| `backtest.py`                    | Runs batch backtests for multiple Vietnamese stocks      |
+| `main.py`                        | Runs the full pipeline for one stock                     |
+| `derivatives_portfolio.py`       | Manages long/short derivatives positions                 |
+| `derivatives_backtest_engine.py` | Core backtest engine for derivatives long/short strategy |
+| `derivatives_backtest.py`        | Runs derivatives backtest using Buy/Sell ATR signals     |
 
 ---
 
@@ -124,7 +186,9 @@ vnstock
 
 ---
 
-## How to Run Single-Stock Backtest
+# Stock Backtesting
+
+## Run Single-Stock Backtest
 
 ### First run: collect data and run backtest
 
@@ -139,7 +203,7 @@ This command will:
 1. Collect historical stock data for `FPT`
 2. Save raw data to `data/raw/FPT.csv`
 3. Calculate Buy/Sell ATR signals
-4. Run the backtest
+4. Run the stock backtest
 5. Export reports and result files
 
 ---
@@ -208,12 +272,10 @@ python src/main.py --symbol FPT --start 2020-01-01 --collect --stop-loss 0.07 --
 
 ## Batch Backtest Multiple Vietnamese Stocks
 
-To backtest multiple Vietnamese stocks at once, use `batch_backtest.py`.
-
-### First run: collect data and backtest multiple stocks
+To backtest multiple Vietnamese stocks at once, use:
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect
 ```
 
 This command will:
@@ -232,7 +294,7 @@ This command will:
 After the data has already been collected, run:
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI
 ```
 
 This will reuse existing CSV files in:
@@ -248,44 +310,116 @@ data/raw/
 Run multiple stocks with a 7% stop loss and 15% take profit:
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI --stop-loss 0.07 --take-profit 0.15
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI --stop-loss 0.07 --take-profit 0.15
 ```
 
 ---
 
 ## Example Stock Groups
 
-You can test different groups of Vietnamese stocks.
-
 ### Large-cap stocks
 
 ```bash
-python src/batch_backtest.py --symbols FPT VNM VCB HPG MWG --start 2020-01-01 --collect
+python src/backtest.py --symbols FPT VNM VCB HPG MWG --start 2020-01-01 --collect
 ```
 
 ### Banking stocks
 
 ```bash
-python src/batch_backtest.py --symbols VCB CTG BID TCB MBB --start 2020-01-01 --collect
+python src/backtest.py --symbols VCB CTG BID TCB MBB --start 2020-01-01 --collect
 ```
 
 ### Securities stocks
 
 ```bash
-python src/batch_backtest.py --symbols SSI VND HCM --start 2020-01-01 --collect
+python src/backtest.py --symbols SSI VND HCM --start 2020-01-01 --collect
 ```
 
-### Mixed portfolio test
+### Mixed stock group
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI CTG BID TCB MBB --start 2020-01-01 --collect
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI CTG BID TCB MBB --start 2020-01-01 --collect
 ```
 
 ---
 
-## Output Files
+# Derivatives Backtesting
 
-### Single-stock output
+## Run VN30F1M Derivatives Backtest
+
+Example with `VN30F1M`:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --collect
+```
+
+This command will:
+
+1. Collect historical data for `VN30F1M`
+2. Save raw data to `data/derivatives/raw/VN30F1M.csv`
+3. Calculate Buy/Sell ATR signals
+4. Run a long/short derivatives backtest
+5. Export derivatives trade history, equity curve, and summary
+
+---
+
+## Run Derivatives Backtest Without Downloading New Data
+
+After the first run, the raw data is already saved in:
+
+```text
+data/derivatives/raw/VN30F1M.csv
+```
+
+You can run again without `--collect`:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI
+```
+
+---
+
+## Run Derivatives Backtest With Stop Loss and Take Profit
+
+Example with 3% stop loss and 6% take profit:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --stop-loss 0.03 --take-profit 0.06 --collect
+```
+
+---
+
+## Run Derivatives Backtest With Custom ATR Parameters
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --trend-period 50 --atr-period 14 --atr-multiplier 1.0 --collect
+```
+
+---
+
+## Derivatives Backtest Settings
+
+Default settings:
+
+```text
+Initial cash: 100,000,000 VND
+Contract multiplier: 100,000
+Margin rate: 15%
+Fee per contract: 3,000 VND
+Quantity: 1 contract per trade
+```
+
+Example with custom settings:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --initial-cash 100000000 --contract-multiplier 100000 --margin-rate 0.15 --fee-per-contract 3000 --quantity 1
+```
+
+---
+
+# Output Files
+
+## Stock Single-Symbol Output
 
 Example with `FPT`:
 
@@ -309,7 +443,7 @@ reports/FPT_report.csv
 
 ---
 
-### Batch backtest output
+## Stock Batch Output
 
 Example with `FPT`, `HPG`, and `VNM`:
 
@@ -337,19 +471,41 @@ data/backtest/VNM_summary.csv
 reports/all_stocks_summary.csv
 ```
 
-The most important batch result file is:
+The most important stock batch result file is:
 
 ```text
 reports/all_stocks_summary.csv
 ```
 
-This file compares the backtest results of all selected stocks.
+---
+
+## Derivatives Output
+
+Example with `VN30F1M`:
+
+```text
+data/derivatives/raw/VN30F1M.csv
+data/derivatives/processed/VN30F1M_signals.csv
+data/derivatives/backtest/VN30F1M_derivatives_trades.csv
+data/derivatives/backtest/VN30F1M_derivatives_equity.csv
+data/derivatives/backtest/VN30F1M_derivatives_summary.csv
+reports/derivatives_summary.csv
+```
+
+| File                              | Description                      |
+| --------------------------------- | -------------------------------- |
+| `VN30F1M.csv`                     | Raw OHLCV derivatives data       |
+| `VN30F1M_signals.csv`             | Data with BUY/SELL/HOLD signals  |
+| `VN30F1M_derivatives_trades.csv`  | Long/short trade history         |
+| `VN30F1M_derivatives_equity.csv`  | Derivatives equity curve         |
+| `VN30F1M_derivatives_summary.csv` | Individual derivatives summary   |
+| `derivatives_summary.csv`         | Final derivatives summary report |
 
 ---
 
-## Input Data Format
+# Input Data Format
 
-The input stock data should contain the following columns:
+The input data should contain the following columns:
 
 ```csv
 date,ticker,open,high,low,close,volume
@@ -359,15 +515,15 @@ Example:
 
 ```csv
 date,ticker,open,high,low,close,volume
-2024-01-02,FPT,95000,97000,94500,96500,1200000
-2024-01-03,FPT,96500,98000,96000,97500,1350000
+2025-01-02,VN30F1M,1280,1290,1270,1285,10000
+2025-01-03,VN30F1M,1285,1300,1280,1295,12000
 ```
 
 If the project is run with `--collect`, the CSV files will be created automatically.
 
 ---
 
-## Data Preprocessing
+# Data Preprocessing
 
 The project includes basic data preprocessing before calculating trading signals and running the backtest.
 
@@ -384,7 +540,7 @@ These steps help ensure that the OHLCV data is clean and suitable for indicator 
 
 ---
 
-## Strategy Logic
+# Strategy Logic
 
 This project uses the Buy/Sell ATR indicator.
 
@@ -396,7 +552,7 @@ ATR Period = 5
 ATR Multiplier = 0.5
 ```
 
-Basic logic:
+Basic signal logic:
 
 ```text
 BUY  when price breaks above the bullish ATR trend zone
@@ -404,21 +560,11 @@ SELL when price breaks below the bearish ATR trend zone
 HOLD when there is no new signal
 ```
 
-Backtest behavior:
-
-```text
-BUY  -> buy shares if there is no open position
-SELL -> sell shares if a position is currently held
-HOLD -> do nothing
-```
-
-The current backtest is long-only, meaning the system buys stocks and later sells them. It does not support short selling.
-
 ---
 
-## What ATR Means
+## ATR Explanation
 
-ATR stands for Average True Range.
+ATR stands for **Average True Range**.
 
 It is a volatility indicator that measures how much the price typically moves over a given period.
 
@@ -439,7 +585,46 @@ When volatility is low, the ATR buffer becomes narrower.
 
 ---
 
-## Default Backtest Settings
+# Backtest Logic
+
+## Stock Mode
+
+Stock mode is long-only:
+
+```text
+BUY  -> buy shares if there is no open position
+SELL -> sell shares if a position is currently held
+HOLD -> do nothing
+```
+
+This mode is suitable for Vietnamese listed stocks.
+
+---
+
+## Derivatives Mode
+
+Derivatives mode supports both long and short positions:
+
+```text
+BUY:
+    if currently SHORT -> close SHORT and open LONG
+    if no position      -> open LONG
+
+SELL:
+    if currently LONG -> close LONG and open SHORT
+    if no position    -> open SHORT
+
+HOLD:
+    keep the current position
+```
+
+This mode is suitable for basic VN30 futures strategy simulation.
+
+---
+
+# Default Backtest Settings
+
+## Stock Mode
 
 ```text
 Initial cash: 100,000,000 VND
@@ -454,43 +639,90 @@ You can change these values using command-line arguments:
 python src/main.py --symbol FPT --initial-cash 50000000 --fee-rate 0.001 --sell-tax-rate 0.001
 ```
 
-For batch backtesting:
+For batch stock backtesting:
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM --initial-cash 50000000 --fee-rate 0.001 --sell-tax-rate 0.001
+python src/backtest.py --symbols FPT HPG VNM --initial-cash 50000000 --fee-rate 0.001 --sell-tax-rate 0.001
 ```
 
 ---
 
-## Example Commands
+## Derivatives Mode
 
-### Single stock
+```text
+Initial cash: 100,000,000 VND
+Contract multiplier: 100,000
+Margin rate: 15%
+Fee per contract: 3,000 VND
+Quantity: 1 contract
+```
+
+You can change these values using command-line arguments:
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --initial-cash 100000000 --contract-multiplier 100000 --margin-rate 0.15 --fee-per-contract 3000 --quantity 1
+```
+
+---
+
+# Example Commands
+
+## Single Stock
 
 ```bash
 python src/main.py --symbol FPT --start 2020-01-01 --collect
 ```
 
-### Single stock with risk management
+## Single Stock With Risk Management
 
 ```bash
 python src/main.py --symbol FPT --start 2020-01-01 --collect --stop-loss 0.07 --take-profit 0.15
 ```
 
-### Multiple stocks
+## Multiple Stocks
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect
 ```
 
-### Multiple stocks with risk management
+## Multiple Stocks With Risk Management
 
 ```bash
-python src/batch_backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect --stop-loss 0.07 --take-profit 0.15
+python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI --start 2020-01-01 --collect --stop-loss 0.07 --take-profit 0.15
+```
+
+## VN30F1M Derivatives
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --collect
+```
+
+## VN30F1M Derivatives With Risk Management
+
+```bash
+python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI --stop-loss 0.03 --take-profit 0.06 --collect
 ```
 
 ---
 
-## Limitations
+# Notes
+
+When tested across multiple Vietnamese stocks, the Buy/Sell ATR strategy does not always produce positive returns.
+
+This is expected because the strategy is sensitive to:
+
+- market conditions
+- stock characteristics
+- volatility
+- parameter settings
+- transaction costs
+- test period
+
+Negative backtest results are useful for evaluating the limitations of the strategy and identifying areas for improvement.
+
+---
+
+# Limitations
 
 This is a simplified backtesting project.
 
@@ -501,14 +733,39 @@ Current limitations include:
 - No advanced position sizing
 - No benchmark comparison yet
 - No dividend or corporate action adjustment
-- No futures or derivatives mechanics
-- No short selling
+- No contract rollover logic for derivatives
+- No margin call simulation
+- No detailed exchange-level derivatives fee model
 - No live trading execution
+- No real-time data feed
 
-## Purposes
+The derivatives module is a simplified long/short simulation and should not be treated as a production-ready futures trading system.
 
-The project is designed for learning, research, and portfolio demonstration purposes.
+---
 
-It helps me practice Python programming, financial data processing, technical indicator implementation, backtesting, and basic portfolio simulation.
+# Future Improvements
 
-I built this project to gain practical experience and demonstrate my ability to develop a simple algorithmic trading system as part of my preparation for internship applications.
+Possible future improvements:
+
+- Add Buy and Hold benchmark comparison
+- Add chart visualization for BUY/SELL signals
+- Add equity curve charts
+- Add max drawdown calculation
+- Add Sharpe ratio
+- Add win/loss average metrics
+- Add parameter optimization
+- Add support for more technical indicators
+- Add better risk management
+- Add derivatives rollover logic
+- Add unit tests
+- Add live data integration
+
+---
+
+# Disclaimer
+
+This project is for educational, research, and portfolio demonstration purposes only.
+
+It is not financial advice and should not be used as a direct investment recommendation.
+
+Trading strategies should be tested carefully with proper risk management before being considered for real-world use.

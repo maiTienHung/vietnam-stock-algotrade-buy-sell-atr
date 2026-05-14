@@ -105,7 +105,6 @@ def calculate_buy_sell_atr(
         prev_upper = df.loc[i - 1, "upper_band"] if i > 0 else np.nan
         prev_lower = df.loc[i - 1, "lower_band"] if i > 0 else np.nan
 
-        # Type A:
         # BUY khi src crossover upper_band
         cross_up = (
             i > 0
