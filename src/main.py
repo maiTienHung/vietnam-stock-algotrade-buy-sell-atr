@@ -9,7 +9,7 @@ from backtest_engine import run_backtest, save_backtest_results
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Algotrade cơ bản cho một cổ phiếu Việt Nam dùng Buy/Sell ATR Type A"
+        description="Algotrade cơ bản cho một cổ phiếu Việt Nam dùng Buy/Sell ATR"
     )
 
     parser.add_argument(
