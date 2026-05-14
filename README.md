@@ -2,17 +2,18 @@
 
 A Python-based learning project for collecting Vietnamese market data, calculating Buy/Sell ATR signals, running backtests, and exporting trading reports.
 
-This project supports two backtesting modes:
+This project supports two main backtesting modes:
 
 1. **Vietnamese stock backtesting**
    - Long-only strategy
+   - Supports single-stock and multi-stock batch backtesting
    - Example symbols: `FPT`, `HPG`, `VNM`, `VCB`, `MWG`, `SSI`
 
 2. **Vietnamese derivatives backtesting**
    - Long/Short strategy
    - Example symbol: `VN30F1M`
 
-The project was built to practice algorithmic trading concepts, financial data processing, technical indicator implementation, portfolio simulation, long/short trading logic, and systematic backtesting.
+The project was created to practice algorithmic trading concepts, financial data processing, technical indicator implementation, portfolio simulation, derivatives long/short logic, and systematic backtesting.
 
 ---
 
@@ -39,24 +40,24 @@ I built this project to demonstrate my ability to develop a simple algorithmic t
 ## Features
 
 - Collect Vietnamese market OHLCV data using `vnstock`
-- Save raw data to CSV
-- Preprocess stock and derivatives price data
+- Save raw market data to CSV
+- Preprocess OHLCV price data
 - Calculate Buy/Sell ATR signals
 - Generate trading signals:
   - `BUY`
   - `SELL`
   - `HOLD`
-- Run a single-stock backtest
+- Run single-stock backtests
 - Run batch backtests across multiple Vietnamese stocks
-- Run derivatives long/short backtest
+- Run VN30F1M derivatives long/short backtests
 - Simulate stock portfolio management
-- Simulate derivatives position management
+- Simulate derivatives long/short position management
 - Support stop loss and take profit
 - Export:
   - trade history
   - equity curve
   - individual symbol summary
-  - batch summary report
+  - stock batch summary report
   - derivatives summary report
 
 ---
@@ -81,22 +82,24 @@ SELL -> sell shares if a position is currently held
 HOLD -> do nothing
 ```
 
+This mode does not support short selling.
+
+---
+
 ### 2. Vietnamese Derivatives Market
 
-This mode is designed for Vietnamese index futures, especially `VN30F1M`.
+This mode is designed for Vietnamese index futures simulation, especially:
+
+```text
+VN30F1M
+```
 
 Derivatives mode uses **long/short logic**:
 
 ```text
-BUY  -> open LONG or close SHORT and open LONG
-SELL -> open SHORT or close LONG and open SHORT
+BUY  -> open LONG, or close SHORT and open LONG
+SELL -> open SHORT, or close LONG and open SHORT
 HOLD -> keep the current position
-```
-
-Example symbol:
-
-```text
-VN30F1M
 ```
 
 For derivatives data collection, using source `VCI` is recommended:
@@ -145,19 +148,34 @@ buy-sell-atr/
 
 ---
 
+## Folder Description
+
+| Folder                        | Description                                             |
+| ----------------------------- | ------------------------------------------------------- |
+| `src/`                        | Contains all Python source code                         |
+| `data/raw/`                   | Stores raw OHLCV stock data                             |
+| `data/processed/`             | Stores stock data after Buy/Sell ATR signal calculation |
+| `data/backtest/`              | Stores stock backtest results                           |
+| `data/derivatives/raw/`       | Stores raw derivatives data such as `VN30F1M`           |
+| `data/derivatives/processed/` | Stores derivatives data with Buy/Sell ATR signals       |
+| `data/derivatives/backtest/`  | Stores derivatives long/short backtest results          |
+| `reports/`                    | Stores final summary reports                            |
+
+---
+
 ## Main Files
 
-| File                             | Description                                              |
-| -------------------------------- | -------------------------------------------------------- |
-| `collect_data.py`                | Collects Vietnamese market data                          |
-| `buy_sell_atr.py`                | Calculates Buy/Sell ATR signals                          |
-| `portfolio.py`                   | Manages cash, shares, trades, and stock portfolio value  |
-| `backtest_engine.py`             | Core backtest engine for long-only stock strategy        |
-| `backtest.py`                    | Runs batch backtests for multiple Vietnamese stocks      |
-| `main.py`                        | Runs the full pipeline for one stock                     |
-| `derivatives_portfolio.py`       | Manages long/short derivatives positions                 |
-| `derivatives_backtest_engine.py` | Core backtest engine for derivatives long/short strategy |
-| `derivatives_backtest.py`        | Runs derivatives backtest using Buy/Sell ATR signals     |
+| File                             | Description                                             |
+| -------------------------------- | ------------------------------------------------------- |
+| `collect_data.py`                | Collects Vietnamese stock and derivatives OHLCV data    |
+| `buy_sell_atr.py`                | Calculates Buy/Sell ATR signals                         |
+| `portfolio.py`                   | Manages long-only stock portfolio simulation            |
+| `backtest_engine.py`             | Core engine for stock long-only backtesting             |
+| `backtest.py`                    | Runs batch backtests for multiple Vietnamese stocks     |
+| `main.py`                        | Runs the full pipeline for one stock                    |
+| `derivatives_portfolio.py`       | Manages derivatives long/short position simulation      |
+| `derivatives_backtest_engine.py` | Core engine for derivatives long/short backtesting      |
+| `derivatives_backtest.py`        | Runs derivatives backtest for symbols such as `VN30F1M` |
 
 ---
 
@@ -190,8 +208,6 @@ vnstock
 
 ## Run Single-Stock Backtest
 
-### First run: collect data and run backtest
-
 Example with `FPT`:
 
 ```bash
@@ -208,7 +224,7 @@ This command will:
 
 ---
 
-## Run Again Without Downloading New Data
+## Run Single-Stock Backtest Again Without Downloading Data
 
 After the first run, the raw data is already saved in:
 
@@ -216,19 +232,19 @@ After the first run, the raw data is already saved in:
 data/raw/FPT.csv
 ```
 
-You can run the project again using:
+Run again without `--collect`:
 
 ```bash
 python src/main.py --symbol FPT
 ```
 
-This will reuse the existing data, recalculate the signals, and run the backtest again.
+This will reuse the existing data, recalculate signals, and run the backtest again.
 
 ---
 
 ## Update Stock Data
 
-To download the latest data again, run:
+To download the latest data again:
 
 ```bash
 python src/main.py --symbol FPT --start 2020-01-01 --collect
@@ -289,9 +305,9 @@ This command will:
 
 ---
 
-## Run Batch Backtest Again Without Downloading New Data
+## Run Batch Backtest Again Without Downloading Data
 
-After the data has already been collected, run:
+After data has already been collected:
 
 ```bash
 python src/backtest.py --symbols FPT HPG VNM VCB MWG SSI
@@ -363,7 +379,7 @@ This command will:
 
 ---
 
-## Run Derivatives Backtest Without Downloading New Data
+## Run Derivatives Backtest Without Downloading Data
 
 After the first run, the raw data is already saved in:
 
@@ -371,7 +387,7 @@ After the first run, the raw data is already saved in:
 data/derivatives/raw/VN30F1M.csv
 ```
 
-You can run again without `--collect`:
+Run again without `--collect`:
 
 ```bash
 python src/derivatives_backtest.py --symbols VN30F1M --start 2025-01-01 --end 2025-12-31 --interval 1D --source VCI
